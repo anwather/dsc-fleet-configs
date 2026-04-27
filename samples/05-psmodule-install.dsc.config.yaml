@@ -30,7 +30,7 @@ resources:
                    Sort-Object Version -Descending | Select-Object -First 1
               @{ Result = if ($m) { $m.Version.ToString() } else { 'absent' } }
             TestScript: |
-              [bool](Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
+              $null -ne (Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
             SetScript: |
               if (-not (Get-PSResourceRepository -Name PSGallery).Trusted) {
                   Set-PSResourceRepository -Name PSGallery -Trusted -Confirm:$false
