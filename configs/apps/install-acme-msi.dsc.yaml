@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: |
+    Install ACME Agent from a signed MSI on the corporate file share.
+    Guarded by an Assertion that the OS is Windows Server.
+parameters:
+  msiSourcePath:
+    type: string
+    defaultValue: \\fileshare01.contoso.local\packages\AcmeAgent\AcmeAgent-1.4.0.msi
+resources:
+  - name: Require Windows Server
+    type: Microsoft.DSC/Assertion
+    properties:
+      resources:
+        - name: OS family
+          type: Microsoft/OSInfo
+          properties:
+            family: Windows
+        - name: OS edition is Server
+          type: Microsoft/OSInfo
+          properties:
+            edition: Server
+
+  - name: ACME Agent
+    type: Microsoft.DSC/PowerShell
+    dependsOn:
+      - "[resourceId('Microsoft.DSC/Assertion','Require Windows Server')]"
+    properties:
+      resources:
+        - name: Install ACME Agent MSI
+          type: DscV3.Discovery/MsiFromShare
+          properties:
+            ProductName: ACME Agent
+            ProductId:   '{8E9A3C2A-1C7C-4F31-9F1A-AAAAAAAAAAAA}'
+            SourcePath:  "[parameters('msiSourcePath')]"
+            Arguments:   /qn /norestart REBOOT=ReallySuppress
+            Ensure:      Present

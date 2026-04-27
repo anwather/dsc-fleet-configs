@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: |
+    Bulk-import a security baseline .reg file using DscV3.Discovery/RegFile.
+    Hash is the SHA256 of the file — a content change forces re-evaluation.
+parameters:
+  regPath:
+    type: string
+    defaultValue: configs/registry/files/baseline-security.reg
+  regHash:
+    type: string
+    defaultValue: 0000000000000000000000000000000000000000000000000000000000000000
+resources:
+  - name: Baseline registry import
+    type: Microsoft.DSC/PowerShell
+    properties:
+      resources:
+        - name: Import baseline-security.reg
+          type: DscV3.Discovery/RegFile
+          properties:
+            Path:   "[parameters('regPath')]"
+            Hash:   "[parameters('regHash')]"
+            Ensure: Present

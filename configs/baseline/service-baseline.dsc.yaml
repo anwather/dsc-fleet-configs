@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: |
+    Service baseline: a small set of Windows services we always want Running and
+    StartupType=Automatic. Uses the WindowsPowerShell adapter to call the legacy
+    PSDesiredStateConfiguration/Service resource (no native v3 resource yet).
+resources:
+  - name: Service baseline
+    type: Microsoft.Windows/WindowsPowerShell
+    properties:
+      resources:
+        - name: BITS running + auto
+          type: PSDesiredStateConfiguration/Service
+          properties:
+            Name:        BITS
+            State:       Running
+            StartupType: Automatic
+        - name: Windows Update running + auto
+          type: PSDesiredStateConfiguration/Service
+          properties:
+            Name:        wuauserv
+            State:       Running
+            StartupType: Automatic
+        - name: Remote Registry disabled
+          type: PSDesiredStateConfiguration/Service
+          properties:
+            Name:        RemoteRegistry
+            State:       Stopped
+            StartupType: Disabled

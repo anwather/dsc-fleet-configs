@@ -1,0 +1,50 @@
+{
+  "$schema": "../assignments/schema.json",
+  "groups": {
+    "all": {
+      "schedule": "Daily 03:00",
+      "mode": "set",
+      "configs": [
+        "configs/baseline/*.dsc.yaml"
+      ]
+    },
+    "web-servers": {
+      "schedule": "Every6Hours",
+      "mode": "set",
+      "configs": [
+        "configs/groups/web-servers.dsc.yaml",
+        "configs/apps/install-7zip-winget.dsc.yaml"
+      ]
+    },
+    "db-servers": {
+      "schedule": "Daily 04:00",
+      "mode": "set",
+      "configs": [
+        "configs/groups/db-servers.dsc.yaml"
+      ]
+    },
+    "canary": {
+      "schedule": "Hourly",
+      "mode": "test",
+      "configs": [
+        "configs/baseline/*.dsc.yaml",
+        "configs/apps/*.dsc.yaml"
+      ]
+    }
+  },
+  "membership": {
+    "all":         [ { "type": "all" } ],
+    "web-servers": [
+      { "type": "arcTag",   "key": "Role",   "value": "Web" },
+      { "type": "hostname", "pattern": "^web-" }
+    ],
+    "db-servers":  [
+      { "type": "arcTag",   "key": "Role",   "value": "DB" },
+      { "type": "adGroup",  "value": "DSC-DB-Servers" }
+    ],
+    "canary":      [
+      { "type": "arcTag",   "key": "Canary", "value": "true" },
+      { "type": "hostname", "pattern": "-canary$" }
+    ]
+  }
+}

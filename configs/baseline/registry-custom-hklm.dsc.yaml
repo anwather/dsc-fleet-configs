@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: |
+    Parameterised single-value HKLM write. Override at apply time:
+      dsc config set --file registry-custom-hklm.dsc.yaml --parameters '{ "valueName":"Foo","valueData":42 }'
+parameters:
+  keyPath:
+    type: string
+    defaultValue: HKLM\SOFTWARE\Contoso\DscV3
+  valueName:
+    type: string
+    defaultValue: ManagedBy
+  valueData:
+    type: int
+    defaultValue: 1
+resources:
+  - name: Custom HKLM value
+    type: Microsoft.Windows/Registry
+    properties:
+      keyPath:   "[parameters('keyPath')]"
+      valueName: "[parameters('valueName')]"
+      valueData:
+        DWord:   "[parameters('valueData')]"
+      _exist: true

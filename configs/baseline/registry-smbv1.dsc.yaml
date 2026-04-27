@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Disable SMBv1 (client + server) per CIS / Microsoft baseline.
+resources:
+  - name: SMB1 server (LanmanServer\Parameters\SMB1)
+    type: Microsoft.Windows/Registry
+    properties:
+      keyPath: HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters
+      valueName: SMB1
+      valueData:
+        DWord: 0
+      _exist: true
+
+  - name: SMB1 client driver Start (mrxsmb10)
+    type: Microsoft.Windows/Registry
+    properties:
+      keyPath: HKLM\SYSTEM\CurrentControlSet\Services\mrxsmb10
+      valueName: Start
+      valueData:
+        DWord: 4
+      _exist: true
+
+  - name: LanmanWorkstation depends-on (remove mrxsmb10)
+    type: Microsoft.Windows/Registry
+    properties:
+      keyPath: HKLM\SYSTEM\CurrentControlSet\Services\LanmanWorkstation
+      valueName: DependOnService
+      valueData:
+        MultiString:
+          - Bowser
+          - MRxSmb20
+          - NSI
+      _exist: true
