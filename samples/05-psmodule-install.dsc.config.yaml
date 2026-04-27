@@ -1,10 +1,14 @@
 # yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 # Sample 5 — Install a PowerShell module from PSGallery
-#            (PSDesiredStateConfiguration/PSModule via WindowsPowerShell adapter).
+#            (PSDscResources/Script wrapping Install-PSResource, run via the
+#             WindowsPowerShell adapter).
 #
-# PSDesiredStateConfiguration v1.1 ships with every Windows install — no extra
-# module install required. The PSRepository resource (also bundled) makes
-# PSGallery trusted; PSModule then installs the named module.
+# PSDscResources is installed by the dsc-fleet bootstrap; PSResourceGet
+# (Install-PSResource) is built in to Windows PowerShell 5.1 via the
+# Microsoft.PowerShell.PSResourceGet module the bootstrap also installs.
+#
+# The "PSModule" DSC resource that used to ship in PowerShellGet is *not*
+# present on a stock Windows install — Script is the portable replacement.
 #
 # Apply with:
 #   dsc config set --file 05-psmodule-install.dsc.config.yaml
@@ -12,24 +16,25 @@ $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 metadata:
   Microsoft.DSC:
     securityContext: elevated
-  description: Install Microsoft.WinGet.Client from PSGallery.
+  description: Install Microsoft.WinGet.Client from PSGallery via Install-PSResource.
 resources:
-  - name: PSGallery + PSModule
+  - name: Install Microsoft.WinGet.Client
     type: Microsoft.Windows/WindowsPowerShell
     properties:
       resources:
-        - name: Trust PSGallery
-          type: PSDesiredStateConfiguration/PSRepository
+        - name: Install-PSResource Microsoft.WinGet.Client
+          type: PSDscResources/Script
           properties:
-            Name:               PSGallery
-            InstallationPolicy: Trusted
-
-        - name: Install Microsoft.WinGet.Client
-          type: PSDesiredStateConfiguration/PSModule
-          dependsOn:
-            - "[resourceId('PSDesiredStateConfiguration/PSRepository','Trust PSGallery')]"
-          properties:
-            Name:       Microsoft.WinGet.Client
-            Repository: PSGallery
-            Ensure:     Present
-            # InstallationPolicy: Trusted  # implied by PSRepository above
+            GetScript: |
+              $m = Get-Module -ListAvailable -Name Microsoft.WinGet.Client |
+                   Sort-Object Version -Descending | Select-Object -First 1
+              @{ Result = if ($m) { $m.Version.ToString() } else { 'absent' } }
+            TestScript: |
+              [bool](Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
+            SetScript: |
+              if (-not (Get-PSResourceRepository -Name PSGallery).Trusted) {
+                  Set-PSResourceRepository -Name PSGallery -Trusted -Confirm:$false
+              }
+              Install-PSResource -Name Microsoft.WinGet.Client -Repository PSGallery `
+                                 -Scope AllUsers -TrustRepository -Reinstall:$false `
+                                 -Confirm:$false

@@ -124,30 +124,36 @@ resources:
             Arguments: /qn /norestart REBOOT=ReallySuppress
 ```
 
-### 5 — Install a PowerShell module (`PSDesiredStateConfiguration/PSModule`)
+### 5 — Install a PowerShell module from PSGallery (`PSDscResources/Script` + `Install-PSResource`)
+
+The legacy `PSModule` / `PSRepository` DSC resources aren't shipped on a stock
+Windows install. Use `PSDscResources/Script` to call `Install-PSResource`
+(from the PSResourceGet module the fleet bootstrap installs).
 
 ```yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 metadata:
   Microsoft.DSC: { securityContext: elevated }
 resources:
-  - name: PSGallery + PSModule
+  - name: Install Microsoft.WinGet.Client
     type: Microsoft.Windows/WindowsPowerShell
     properties:
       resources:
-        - name: Trust PSGallery
-          type: PSDesiredStateConfiguration/PSRepository
+        - name: Install-PSResource Microsoft.WinGet.Client
+          type: PSDscResources/Script
           properties:
-            Name:               PSGallery
-            InstallationPolicy: Trusted
-        - name: Install Microsoft.WinGet.Client
-          type: PSDesiredStateConfiguration/PSModule
-          dependsOn:
-            - "[resourceId('PSDesiredStateConfiguration/PSRepository','Trust PSGallery')]"
-          properties:
-            Name:       Microsoft.WinGet.Client
-            Repository: PSGallery
-            Ensure:     Present
+            GetScript: |
+              $m = Get-Module -ListAvailable -Name Microsoft.WinGet.Client |
+                   Sort-Object Version -Descending | Select-Object -First 1
+              @{ Result = if ($m) { $m.Version.ToString() } else { 'absent' } }
+            TestScript: |
+              [bool](Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
+            SetScript: |
+              if (-not (Get-PSResourceRepository -Name PSGallery).Trusted) {
+                  Set-PSResourceRepository -Name PSGallery -Trusted -Confirm:$false
+              }
+              Install-PSResource -Name Microsoft.WinGet.Client -Repository PSGallery `
+                                 -Scope AllUsers -TrustRepository -Confirm:$false
 ```
 
 ### 6 — Run a Get/Test/Set Script (`PSDscResources/Script`)
