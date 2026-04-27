@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+# Sample 1 — Set a single registry value (built-in Microsoft.Windows/Registry).
+#
+# No PSDSC adapter and no module install required — Microsoft.Windows/Registry
+# is a native DSC v3 resource that ships with the dsc CLI.
+#
+# Apply with:
+#   dsc config set --file 01-registry-single-value.dsc.config.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Set a single HKLM registry value.
+resources:
+  - name: ManagedBy marker
+    type: Microsoft.Windows/Registry
+    properties:
+      keyPath:   HKLM\SOFTWARE\Contoso\DscV3   # full hive\subkey path
+      valueName: ManagedBy                     # single value name
+      valueData:
+        DWord:   1                             # typed value (DWord/String/MultiString/Binary/QWord)
+      _exist:    true                          # _exist=true creates; false deletes

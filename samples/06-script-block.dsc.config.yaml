@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+# Sample 6 — Run a Get/Test/Set Script (PSDscResources/Script via
+#            WindowsPowerShell adapter).
+#
+# Use sparingly — Script is the escape hatch when no purpose-built resource
+# exists. SetScript runs only when TestScript returns $false; GetScript
+# returns hashtables for reporting.
+#
+# Apply with:
+#   dsc config set --file 06-script-block.dsc.config.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Ensure C:\Tools exists, owned, ACL'd via Script.
+resources:
+  - name: Provision C:\Tools
+    type: Microsoft.Windows/WindowsPowerShell
+    properties:
+      resources:
+        - name: Ensure C:\Tools directory
+          type: PSDscResources/Script
+          properties:
+            GetScript: |
+              @{ Result = (Test-Path 'C:\Tools') }
+            TestScript: |
+              Test-Path 'C:\Tools'
+            SetScript: |
+              New-Item -Path 'C:\Tools' -ItemType Directory -Force | Out-Null

@@ -3,15 +3,17 @@ $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 metadata:
   Microsoft.DSC:
     securityContext: elevated
-  description: Install 7-Zip via the winget package manager (DscV3.Discovery/WingetPackage).
+  description: |
+    Install 7-Zip via winget. Uses the Microsoft-published Microsoft.WinGet.DSC
+    PowerShell module (class-based DSC v3 resource) — discovered automatically
+    by the Microsoft.DSC/PowerShell adapter; no WindowsPowerShell wrapper needed.
+    NOTE: Windows Server 2019 does NOT ship winget. Use install-acme-msi.dsc.yaml
+    (MsiPackage via WindowsPowerShell adapter) for WS2019 fleets.
 resources:
-  - name: 7-Zip
-    type: Microsoft.DSC/PowerShell
+  - name: Install 7-Zip
+    type: Microsoft.WinGet.DSC/WinGetPackage
     properties:
-      resources:
-        - name: Install 7-Zip
-          type: DscV3.Discovery/WingetPackage
-          properties:
-            Id:     7zip.7zip
-            Source: winget
-            Ensure: Present
+      Id:     7zip.7zip
+      Source: winget
+      Ensure: Present
+

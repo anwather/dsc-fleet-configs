@@ -4,7 +4,7 @@ metadata:
   Microsoft.DSC:
     securityContext: elevated
   description: |
-    Bulk-import a security baseline .reg file using DscV3.Discovery/RegFile.
+    Bulk-import a security baseline .reg file using DscV3.RegFile/RegFile.
     Hash is the SHA256 of the file — a content change forces re-evaluation.
 parameters:
   regPath:
@@ -19,8 +19,9 @@ resources:
     properties:
       resources:
         - name: Import baseline-security.reg
-          type: DscV3.Discovery/RegFile
+          type: DscV3.RegFile/RegFile
           properties:
             Path:   "[parameters('regPath')]"
             Hash:   "[parameters('regHash')]"
             Ensure: Present
+

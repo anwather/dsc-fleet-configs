@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+# Sample 3 — Install a winget package (Microsoft.WinGet.DSC/WinGetPackage).
+#
+# Microsoft-published class-based PSDSC resource (PSGallery: Microsoft.WinGet.DSC).
+# Discovered automatically by the Microsoft.DSC/PowerShell adapter — no
+# WindowsPowerShell wrapper needed.
+#
+# Requires winget on the target. Windows Server 2019 does NOT ship winget;
+# use sample 04 (MsiPackage via WindowsPowerShell adapter) for WS2019 fleets.
+#
+# Apply with:
+#   dsc config set --file 03-winget-install.dsc.config.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Install 7-Zip via winget.
+resources:
+  - name: Install 7-Zip
+    type: Microsoft.WinGet.DSC/WinGetPackage
+    properties:
+      Id:     7zip.7zip       # winget package identifier (use `winget search`)
+      Source: winget          # source/repo (winget | msstore | private)
+      Ensure: Present         # Present = install/upgrade; Absent = uninstall

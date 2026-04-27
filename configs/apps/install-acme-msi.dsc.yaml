@@ -5,36 +5,26 @@ metadata:
     securityContext: elevated
   description: |
     Install ACME Agent from a signed MSI on the corporate file share.
-    Guarded by an Assertion that the OS is Windows Server.
+    Uses PSDscResources/MsiPackage (Microsoft-maintained replacement for the
+    built-in MsiPackage resource) via the Microsoft.Windows/WindowsPowerShell
+    adapter, which is required for MOF-based / function-based PSDSC resources.
 parameters:
   msiSourcePath:
     type: string
     defaultValue: \\fileshare01.contoso.local\packages\AcmeAgent\AcmeAgent-1.4.0.msi
+  productId:
+    type: string
+    defaultValue: '{8E9A3C2A-1C7C-4F31-9F1A-AAAAAAAAAAAA}'
 resources:
-  - name: Require Windows Server
-    type: Microsoft.DSC/Assertion
+  - name: ACME Agent MSI
+    type: Microsoft.Windows/WindowsPowerShell
     properties:
       resources:
-        - name: OS family
-          type: Microsoft/OSInfo
+        - name: Install ACME Agent
+          type: PSDscResources/MsiPackage
           properties:
-            family: Windows
-        - name: OS edition is Server
-          type: Microsoft/OSInfo
-          properties:
-            edition: Server
+            ProductId: "[parameters('productId')]"
+            Path:      "[parameters('msiSourcePath')]"
+            Ensure:    Present
+            Arguments: /qn /norestart REBOOT=ReallySuppress
 
-  - name: ACME Agent
-    type: Microsoft.DSC/PowerShell
-    dependsOn:
-      - "[resourceId('Microsoft.DSC/Assertion','Require Windows Server')]"
-    properties:
-      resources:
-        - name: Install ACME Agent MSI
-          type: DscV3.Discovery/MsiFromShare
-          properties:
-            ProductName: ACME Agent
-            ProductId:   '{8E9A3C2A-1C7C-4F31-9F1A-AAAAAAAAAAAA}'
-            SourcePath:  "[parameters('msiSourcePath')]"
-            Arguments:   /qn /norestart REBOOT=ReallySuppress
-            Ensure:      Present

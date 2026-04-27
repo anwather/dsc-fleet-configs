@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+# Sample 8 — Install/remove a Windows Server role or feature
+#            (PSDscResources/WindowsOptionalFeature via WindowsPowerShell adapter).
+#
+# For full Server roles use PSDscResources/WindowsFeature (DISM-backed) — both
+# wrap the same DISM/Add-WindowsFeature plumbing as Server Manager.
+#
+# Apply with:
+#   dsc config set --file 08-windows-feature.dsc.config.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Install IIS Web-Server role.
+resources:
+  - name: Web-Server role
+    type: Microsoft.Windows/WindowsPowerShell
+    properties:
+      resources:
+        - name: Install IIS
+          type: PSDscResources/WindowsFeature
+          properties:
+            Name:                 Web-Server     # Get-WindowsFeature for valid names
+            Ensure:               Present        # Present = install; Absent = uninstall
+            IncludeAllSubFeature: false

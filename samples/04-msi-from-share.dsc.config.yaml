@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+# Sample 4 — Install an MSI from a UNC share (PSDscResources/MsiPackage).
+#
+# PSDscResources is the Microsoft-maintained replacement for the deprecated
+# in-box xPSDesiredStateConfiguration. MsiPackage is a MOF-based PSDSC v1
+# resource so it must be wrapped by Microsoft.Windows/WindowsPowerShell.
+#
+# Apply with:
+#   dsc config set --file 04-msi-from-share.dsc.config.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Install ACME Agent MSI from corporate share.
+resources:
+  - name: ACME Agent MSI
+    type: Microsoft.Windows/WindowsPowerShell
+    properties:
+      resources:
+        - name: Install ACME Agent
+          type: PSDscResources/MsiPackage
+          properties:
+            ProductId: '{8E9A3C2A-1C7C-4F31-9F1A-AAAAAAAAAAAA}'  # MSI ProductCode GUID
+            Path:      \\fileshare01.contoso.local\packages\AcmeAgent\AcmeAgent-1.4.0.msi
+            Ensure:    Present                                   # Present | Absent
+            Arguments: /qn /norestart REBOOT=ReallySuppress

@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+# Sample 5 — Install a PowerShell module from PSGallery
+#            (PSDesiredStateConfiguration/PSModule via WindowsPowerShell adapter).
+#
+# PSDesiredStateConfiguration v1.1 ships with every Windows install — no extra
+# module install required. The PSRepository resource (also bundled) makes
+# PSGallery trusted; PSModule then installs the named module.
+#
+# Apply with:
+#   dsc config set --file 05-psmodule-install.dsc.config.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Install Microsoft.WinGet.Client from PSGallery.
+resources:
+  - name: PSGallery + PSModule
+    type: Microsoft.Windows/WindowsPowerShell
+    properties:
+      resources:
+        - name: Trust PSGallery
+          type: PSDesiredStateConfiguration/PSRepository
+          properties:
+            Name:               PSGallery
+            InstallationPolicy: Trusted
+
+        - name: Install Microsoft.WinGet.Client
+          type: PSDesiredStateConfiguration/PSModule
+          dependsOn:
+            - "[resourceId('PSDesiredStateConfiguration/PSRepository','Trust PSGallery')]"
+          properties:
+            Name:       Microsoft.WinGet.Client
+            Repository: PSGallery
+            Ensure:     Present
+            # InstallationPolicy: Trusted  # implied by PSRepository above

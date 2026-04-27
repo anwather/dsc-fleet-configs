@@ -1,9 +1,9 @@
 Windows Registry Editor Version 5.00
 
-; Sample baseline .reg used to demonstrate DscV3.Discovery/RegFile.
+; Sample baseline .reg used to demonstrate DscV3.RegFile/RegFile.
 ; Replace with your real exported security baseline.
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Contoso\DscV3\Baseline]
 "BaselineVersion"="2025.01"
-"AppliedBy"="DscV3.Discovery"
+"AppliedBy"="DscV3.RegFile"
 "AuditMode"=dword:00000001

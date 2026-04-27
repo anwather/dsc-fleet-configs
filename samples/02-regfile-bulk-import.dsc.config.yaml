@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+# Sample 2 — Bulk-import a Windows .reg file (custom DscV3.RegFile/RegFile).
+#
+# The only custom resource shipped by this platform. Wraps `reg.exe import`
+# with idempotent verification: Test() compares every value in the .reg to
+# the live registry. Optional Hash gates execution if the file changed.
+# Loaded by the Microsoft.DSC/PowerShell adapter (class-based PSDSC).
+#
+# Apply with:
+#   dsc config set --file 02-regfile-bulk-import.dsc.config.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Bulk-import a .reg file.
+resources:
+  - name: Baseline registry import
+    type: Microsoft.DSC/PowerShell
+    properties:
+      resources:
+        - name: Import baseline-security.reg
+          type: DscV3.RegFile/RegFile
+          properties:
+            Path:   C:\ProgramData\DscV3\repo\configs\registry\files\baseline-security.reg
+            Hash:   ''                # optional SHA256 — '' means skip integrity check
+            Ensure: Present           # Present = import; Absent = remove every value listed

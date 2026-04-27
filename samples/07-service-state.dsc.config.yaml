@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+# Sample 7 — Configure a Windows service
+#            (PSDesiredStateConfiguration/Service via WindowsPowerShell adapter).
+#
+# Built-in Service resource — no module install. Manages StartupType, State,
+# and (optionally) credentials of an existing or newly created service.
+#
+# Apply with:
+#   dsc config set --file 07-service-state.dsc.config.yaml
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+  description: Disable Print Spooler (sample baseline).
+resources:
+  - name: Service baseline
+    type: Microsoft.Windows/WindowsPowerShell
+    properties:
+      resources:
+        - name: Disable Print Spooler
+          type: PSDesiredStateConfiguration/Service
+          properties:
+            Name:        Spooler
+            StartupType: Disabled         # Automatic | Manual | Disabled
+            State:       Stopped          # Running | Stopped
+            Ensure:      Present          # Present (configure) | Absent (uninstall)
